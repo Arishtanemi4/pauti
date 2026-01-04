@@ -1,0 +1,19 @@
+name: pauti
+channels:
+  - defaults
+  - anaconda
+  - conda-forge
+  - esri
+  - paddle
+  - menpo
+dependencies:
+  - python=3.10  # Specified 3.10 for best compatibility with Paddle
+  - pandas
+  - sqlalchemy
+  - pydantic
+  - python-dateutil
+  - pdf2image
+  - poppler
+  - paddlepaddle
+  - paddleocr
+  - opencv
