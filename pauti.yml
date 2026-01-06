@@ -17,3 +17,4 @@ dependencies:
   - paddlepaddle
   - paddleocr
   - opencv
+  - fastapi
