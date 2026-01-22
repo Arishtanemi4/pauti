@@ -1,174 +1,153 @@
-# app/models.py
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime
-from sqlalchemy.sql import func
-from .database import Base
-
 import uuid
-import enum
-from datetime import datetime
-from sqlalchemy import (Column, String, Integer, Float, Boolean, Date, DateTime, ForeignKey, Enum, Text)
+from sqlalchemy import (
+    Column, String, Integer, Boolean, Date, ForeignKey, Text
+)
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 
-# 1. Setup Database Connection (SQLite for local usage)
 DATABASE_URL = "sqlite:///./pauti.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 Base = declarative_base()
 
-# Enums for data consistency
-class SourceType(enum.Enum):
-    MANUAL = "MANUAL"
-    OCR = "OCR"
-    BANK_STMT = "BANK_STMT"
+# --- HELPER FUNCTION FOR PREFIXED IDs ---
+def generate_id(prefix):
+    """
+    Generates a UUID with a readable prefix.
+    Example: generate_id('usr') -> 'usr_550e8400-e29b-41d4...'
+    """
+    return f"{prefix}_{str(uuid.uuid4())}"
 
 
-# --- MASTER TABLES (Prefixes Removed) ---
+# --- MASTER TABLES ---
+
+class Category(Base):
+    __tablename__ = "categories"
+    
+    # Prefix: cat_
+    category_id = Column(Text, primary_key=True, default=lambda: generate_id("cat"))
+    category_name = Column(Text)
+    category_type = Column(Text)
+    
+    products = relationship("Product", back_populates="category")
+    stores = relationship("Store", back_populates="category")
+
 
 class User(Base):
     __tablename__ = "users"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    username = Column(String, index=True) # e.g., 'kaustubh'
-    email = Column(String, unique=True, nullable=True)
-    default_currency = Column(String, default="GBP")
+    # Prefix: usr_
+    user_id = Column(Text, primary_key=True, default=lambda: generate_id("usr"))
+    username = Column(Text)
+    email = Column(Text)
+    default_currency = Column(Text)
     is_active = Column(Boolean, default=True)
     
-    # Relationships
     transactions_paid = relationship("TransactionHeader", back_populates="payer")
-    splits_owed = relationship("ExpenseSplit", back_populates="debtor")
-
-
-class ProductCategory(Base):
-    __tablename__ = "product_categories"
-
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, unique=True) # e.g., 'groceries', 'junk', 'travel'
-    
-    products = relationship("Product", back_populates="category")
-    stores = relationship("Store", back_populates="default_category")
+    debt_splits = relationship("ExpenseSplit", back_populates="debtor")
 
 
 class PaymentMode(Base):
     __tablename__ = "payment_modes"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, unique=True) # e.g., 'cash', 'niyo', 'sbi'
+    # Prefix: pay_
+    payment_mode_id = Column(Text, primary_key=True, default=lambda: generate_id("pay"))
+    payment_mode_name = Column(Text)
     
     transactions = relationship("TransactionHeader", back_populates="payment_mode")
-
-
-class Store(Base):
-    __tablename__ = "stores"
-    
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, index=True) # e.g., 'lidl', 'gogo pizza'
-    logo_url = Column(String, nullable=True)
-    
-    # If a store is almost always one category (e.g., Uber = Travel), set a default
-    default_category_id = Column(String, ForeignKey("product_categories.id"), nullable=True)
-    
-    default_category = relationship("ProductCategory", back_populates="stores")
-    transactions = relationship("TransactionHeader", back_populates="store")
 
 
 class Product(Base):
     __tablename__ = "products"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = Column(String, index=True) # e.g., 'milk', 'deep pan pizza'
-    std_metric = Column(String) # e.g., 'unit', 'kg', 'litre'
+    # Prefix: prod_
+    product_id = Column(Text, primary_key=True, default=lambda: generate_id("prod"))
+    product_category_id = Column(Text, ForeignKey("categories.category_id"))
+    product_name = Column(Text)
+    std_metric = Column(Text)
     
-    category_id = Column(String, ForeignKey("product_categories.id"))
-    
-    category = relationship("ProductCategory", back_populates="products")
+    category = relationship("Category", back_populates="products")
     transaction_lines = relationship("TransactionLine", back_populates="product")
 
 
-# --- INCREMENTAL / TRANSACTIONAL TABLES ---
+class Store(Base):
+    __tablename__ = "stores"
+    
+    # Prefix: sto_ (Using 'sto' to avoid confusion with 'str'/String)
+    store_id = Column(Text, primary_key=True, default=lambda: generate_id("sto"))
+    store_category_id = Column(Text, ForeignKey("categories.category_id"), nullable=True)
+    store_name = Column(Text)
+    
+    category = relationship("Category", back_populates="stores")
+    transactions = relationship("TransactionHeader", back_populates="store")
+
+
+# --- TRANSACTION TABLES ---
 
 class TransactionHeader(Base):
-    """
-    Represents the receipt header or a single bank statement row.
-    """
-    __tablename__ = "transactions_header"
+    __tablename__ = "transaction_header"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    date = Column(Date, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    # Prefix: txn_
+    trxn_id = Column(Text, primary_key=True, default=lambda: generate_id("txn"))
+    payer_user_id = Column(Text, ForeignKey("users.user_id"))
+    store_id = Column(Text, ForeignKey("stores.store_id"))
+    payment_mode_id = Column(Text, ForeignKey("payment_modes.payment_mode_id"))
     
-    # Foreign Keys
-    store_id = Column(String, ForeignKey("stores.id"), nullable=True)
-    payer_user_id = Column(String, ForeignKey("users.id"))
-    payment_mode_id = Column(String, ForeignKey("payment_modes.id"))
+    trxn_date = Column(Date)
+    total_amount = Column(Integer)
+    currency = Column(Text)
+    source_type = Column(Text)
+    source_reference = Column(Text)
+    is_reconciled = Column(Boolean, default=False)
     
-    # Financials
-    total_amount_gbp = Column(Float, nullable=False)
-    total_amount_inr = Column(Float, nullable=True)
-    exchange_rate = Column(Float, default=1.0)
-    
-    # Metadata
-    source_type = Column(Enum(SourceType), default=SourceType.MANUAL)
-    source_reference = Column(String, nullable=True) # e.g., filename
-    is_reconciled = Column(Boolean, default=False)   # Matched bank stmt with receipt?
-    
-    # Relationships
-    store = relationship("Store", back_populates="transactions")
     payer = relationship("User", back_populates="transactions_paid")
+    store = relationship("Store", back_populates="transactions")
     payment_mode = relationship("PaymentMode", back_populates="transactions")
     lines = relationship("TransactionLine", back_populates="header", cascade="all, delete-orphan")
+    splits = relationship("ExpenseSplit", back_populates="transaction", cascade="all, delete-orphan")
 
 
 class TransactionLine(Base):
-    """
-    Represents specific items inside a transaction.
-    """
     __tablename__ = "transaction_lines"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    txn_id = Column(String, ForeignKey("transactions_header.id"))
+    # Prefix: line_
+    line_id = Column(Text, primary_key=True, default=lambda: generate_id("line"))
+    trxn_id = Column(Text, ForeignKey("transaction_header.trxn_id"))
+    product_id = Column(Text, ForeignKey("products.product_id"), nullable=True)
     
-    # Product Details
-    product_id = Column(String, ForeignKey("products.id"), nullable=True)
-    product_name_raw = Column(String) # Text from OCR if product not in DB yet
+    product_name = Column(Text)
+    quantity = Column(Integer)
+    metric = Column(Text)
+    unit_price = Column(Integer)
+    line_amount = Column(Integer)
     
-    # Quantities
-    quantity = Column(Float, default=1.0)
-    metric = Column(String) # gm, ml, unit
-    unit_price = Column(Float, nullable=True)
-    line_total_gbp = Column(Float)
-    
-    description = Column(Text, nullable=True) # Line-specific comment
-    
-    # Relationships
     header = relationship("TransactionHeader", back_populates="lines")
     product = relationship("Product", back_populates="transaction_lines")
     splits = relationship("ExpenseSplit", back_populates="line", cascade="all, delete-orphan")
 
 
 class ExpenseSplit(Base):
-    """
-    Splitwise Logic: Links a specific line item to the person who owes money for it.
-    """
     __tablename__ = "expense_splits"
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    line_id = Column(String, ForeignKey("transaction_lines.id"))
-    debtor_user_id = Column(String, ForeignKey("users.id")) # Who owes the money
+    # Prefix: splt_
+    split_id = Column(Text, primary_key=True, default=lambda: generate_id("splt"))
+    trxn_id = Column(Text, ForeignKey("transaction_header.trxn_id"), nullable=True)
+    line_id = Column(Text, ForeignKey("transaction_lines.line_id"), nullable=True)
+    debtor_id = Column(Text, ForeignKey("users.user_id"))
     
-    owed_amount_gbp = Column(Float)
+    owned_amount = Column(Integer)
+    currency = Column(Text)
     is_settled = Column(Boolean, default=False)
     
-    # Relationships
+    transaction = relationship("TransactionHeader", back_populates="splits")
     line = relationship("TransactionLine", back_populates="splits")
-    debtor = relationship("User", back_populates="splits_owed")
+    debtor = relationship("User", back_populates="debt_splits")
 
-
-# --- INITIALIZATION SCRIPT ---
 
 def init_db():
-    print("Creating database tables...")
+    print("Creating tables with prefixed IDs...")
     Base.metadata.create_all(bind=engine)
-    print("Tables created successfully in 'pauti.db'")
+    print("Tables created successfully.")
+
 
 if __name__ == "__main__":
     init_db()
