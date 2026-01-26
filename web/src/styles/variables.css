@@ -1,0 +1,37 @@
+:root {
+  /* Core Palette */
+  --color-saffron: #FF9933;
+  --color-yellow: #FFCC00;
+  --color-white: #FFFFFF;
+  --color-black: #1A1A1A; /* Softer black for better readability */
+  --color-gray: #F5F5F5;
+  --color-dark-gray: #333333;
+}
+
+[data-theme='light'] {
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray);
+  --text-primary: var(--color-black);
+  --text-secondary: var(--color-dark-gray);
+  --accent-primary: var(--color-saffron);
+  --accent-secondary: var(--color-yellow);
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --bg-primary: var(--color-black);
+  --bg-secondary: var(--color-dark-gray);
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-gray);
+  --accent-primary: var(--color-yellow); /* Yellow pops better on dark */
+  --accent-secondary: var(--color-saffron);
+  --card-shadow: 0 4px 6px rgba(255, 153, 51, 0.2); /* Saffron glow */
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
