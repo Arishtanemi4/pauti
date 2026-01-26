@@ -1,7 +1,5 @@
 import uuid
-from sqlalchemy import (
-    Column, String, Integer, Boolean, Date, ForeignKey, Text
-)
+from sqlalchemy import Column, String, Integer, Boolean, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 

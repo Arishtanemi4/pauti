@@ -1,1 +1,0 @@
-{"resources":{"Scripts/pauti/Script.sql":{"default-datasource":"sqlite_jdbc-19b945083ab-6f7b16802e293f9a"},"Scripts/pauti/currency.sql":{"default-datasource":"sqlite_jdbc-19b945083ab-6f7b16802e293f9a"},"Scripts/pauti/expenses_create.sql":{"default-datasource":"sqlite_jdbc-19b945083ab-6f7b16802e293f9a"}}}

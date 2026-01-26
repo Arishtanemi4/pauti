@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # For a local app, SQLite is perfect and private.
-SQLALCHEMY_DATABASE_URL = "sqlite:///./expenses.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./pauti.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
