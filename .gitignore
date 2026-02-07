@@ -3,3 +3,4 @@
 *docs*
 *.dbeaver*
 *node_modules*
+*data*
