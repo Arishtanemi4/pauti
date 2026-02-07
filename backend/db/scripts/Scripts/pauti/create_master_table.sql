@@ -9,7 +9,10 @@ create table categories (
 drop table if exists users;
 create table users (
   user_id text primary key,    -- UUID
-  username text,
+  username text not null,
+  firstname text,
+  lastname text,
+  contact_number text,
   email text,
   default_currency text,
   is_active boolean

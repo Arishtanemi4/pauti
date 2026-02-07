@@ -1,10 +1,10 @@
 import cv2
-import pytesseract
-import json
 import re
-import ollama
 import os
 import glob
+import json
+import ollama
+import pytesseract
 import dotenv
 
 dotenv.load_dotenv()  # Load environment variables from .env file
