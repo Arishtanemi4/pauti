@@ -1,20 +1,32 @@
 name: pauti
 channels:
-  - defaults
-  - anaconda
-  - conda-forge
-  - esri
-  - paddle
-  - menpo
+  - conda-forge    # Priority 1: Ensures all DLLs (OpenCV, MKL) come from the same source
+  - defaults       # Priority 2: Backup for standard libs
 dependencies:
-  - python=3.10  # Specified 3.10 for best compatibility with Paddle
+  - python=3.10
+  - pip            # Required to install Paddle later if needed
+  
+  # Core Data & Backend
   - pandas
   - sqlalchemy
   - pydantic
   - python-dateutil
-  - pdf2image
-  - poppler
-  - paddlepaddle
-  - paddleocr
-  - opencv
   - fastapi
+  - uvicorn
+  - regex
+  
+  # Computer Vision & OCR
+  - opencv         # Conda-forge version (includes the missing DLLs)
+  - mkl-service    # Explicitly added to fix your specific MKL warning
+  
+  # PDF & OCR Tools (Wrappers + Binaries)
+  - pdf2image
+  - poppler        # CRITICAL: pdf2image fails without this binary installed
+  - pytesseract
+  - tesseract      # CRITICAL: pytesseract fails without this binary installed
+  - ollama         # For LLM-based OCR post-processing
+
+  # Pip-only packages (Uncomment if you need Paddle)
+  # - pip:
+    # - paddlepaddle
+    # - paddleocr
