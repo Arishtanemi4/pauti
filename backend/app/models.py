@@ -1,9 +1,15 @@
+import os
 import uuid
 from sqlalchemy import Column, String, Integer, Boolean, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
+import dotenv
 
-DATABASE_URL = "sqlite:///./pauti.db"
+dotenv.load_dotenv()  # Load environment variables from .env file if it exists
+
+
+DB_PATH = os.getenv("DB_PATH")  # Default to 'app.db' if not set
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 Base = declarative_base()
 
@@ -37,6 +43,9 @@ class User(Base):
     user_id = Column(Text, primary_key=True, default=lambda: generate_id("usr"))
     username = Column(Text)
     email = Column(Text)
+    firstname = Column(Text)
+    lastname = Column(Text)
+    contact_number = Column(Text)
     default_currency = Column(Text)
     is_active = Column(Boolean, default=True)
     

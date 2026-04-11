@@ -26,8 +26,8 @@ create table transaction_lines (
   metric text,
   unit_price integer,
   line_amount integer,
-  foreign key trxn_id references transaction_header(trxn_id),
-  foreign key product_id references products(product_id)
+  foreign key (trxn_id) references transaction_header(trxn_id),
+  foreign key (product_id) references products(product_id)
 );
 
 
@@ -40,7 +40,7 @@ create table expense_splits (
   owned_amount integer,
   currency text,
   is_settled boolean,
-  foreign key trxn_id references transaction_header(trxn_id),
-  foreign key line_id references transaction_lines(line_id),
-  foreign key debtor_id references users(user_id)
+  foreign key (trxn_id) references transaction_header(trxn_id),
+  foreign key (line_id) references transaction_lines(line_id),
+  foreign key (debtor_id) references users(user_id)
 );

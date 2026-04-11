@@ -1,5 +1,6 @@
 --attach database "E:\dev\pauti\db\pauti.db" as pauti
 
+drop table if exists pauti
 CREATE TABLE pauti.expenses (
     -- Unique ID (UUID) is safer for offline apps than Auto-Increment
     -- id TEXT PRIMARY KEY,

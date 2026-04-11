@@ -1,7 +1,7 @@
 # app/main.py
 from fastapi import FastAPI
-from database import engine, Base
-from routers import expenses, analytics
+from app.database import engine, Base
+from app.routers import expenses, analytics
 
 # Create tables
 Base.metadata.create_all(bind=engine)
