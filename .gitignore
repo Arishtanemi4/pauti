@@ -3,6 +3,7 @@
 .dbeaver/
 .serena/
 *GEMINI.md*
+.DS_Store
 
 # Python
 __pycache__/
@@ -16,6 +17,24 @@ node_modules/
 dist/
 build/
 web-build/
+expo-env.d.ts
+.metro-health-check*
+*.tsbuildinfo
+/android
+/ios
+
+# Native signing
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
 # Local databases — one per device, never committed
 *.db
@@ -29,13 +48,12 @@ web-build/
 
 # Personal financial data. Real receipts and bank statements stay on device;
 # this repository is intended to be public. See docs/architecture.md ADR-010.
-backend/docs/data/
 ml/tests/fixtures/receipts/
 ml/tests/fixtures/bank-statements/
 ml/tests/fixtures/extracts/
 
 # Bug artefact: directory created from an unsubstituted template string
-backend/{DB_PATH}/
+ml/{DB_PATH}/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
