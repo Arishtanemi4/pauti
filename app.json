@@ -3,6 +3,7 @@
     "name": "pauti",
     "slug": "pauti",
     "version": "0.1.0",
+    "scheme": "pauti",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
