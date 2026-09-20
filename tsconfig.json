@@ -3,7 +3,12 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "src/*": ["./src/*"]
-    }
+      "src/*": [
+        "./src/*"
+      ]
+    },
+    "types": [
+      "node"
+    ]
   }
 }
