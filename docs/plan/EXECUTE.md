@@ -646,32 +646,32 @@ Ten phases. Each ends with a **Verify** block. Do not start the next phase until
 
 Tag on completion: `v0.1.0-alpha.0`
 
-- [ ] **0.1** Create branch `build/v0.1.0` off `main`. (Current work sits on
+- [x] **0.1** Create branch `build/v0.1.0` off `main`. (Current work sits on
       `hackathon/ethoxford`; do not build on top of it.)
-- [ ] **0.2** Untrack files that patterns already cover but git still tracks:
+- [x] **0.2** Untrack files that patterns already cover but git still tracks:
       `git rm --cached backend/.env backend/pauti.db backend/db/pauti.db "backend/{DB_PATH}"`
-- [ ] **0.3** Delete the `backend/{DB_PATH}` directory. It is a folder literally named after an
+- [x] **0.3** Delete the `backend/{DB_PATH}` directory. It is a folder literally named after an
       unsubstituted template string — a bug artefact from `backend/app/models.py`.
-- [ ] **0.4** Move `backend/` to `ml/`. **Delete**: `app/routers/`, `app/database.py`,
+- [x] **0.4** Move `backend/` to `ml/`. **Delete**: `app/routers/`, `app/database.py`,
       `main.py`, `schemas.py`, `app/services/split_logic.py`, `app/services/create_user.py`,
       `pauti.yml`, all `.db` files, all `__pycache__/`.
       **Keep**: `app/services/ocr_engine.py`, `app/services/ocr_llm.py`, `db/json_read.py`.
-- [ ] **0.5** Move fixtures to `ml/tests/fixtures/{receipts,bank-statements,extracts}/`.
+- [x] **0.5** Move fixtures to `ml/tests/fixtures/{receipts,bank-statements,extracts}/`.
       Confirm each destination is gitignored **before** moving anything.
-- [ ] **0.6** Move `backend/db/PautiUML.drawio` and `.png` to `docs/diagrams/` as
+- [x] **0.6** Move `backend/db/PautiUML.drawio` and `.png` to `docs/diagrams/` as
       `PautiUML-v1.*`. They depict the superseded schema; `architecture.md` already says so.
-- [ ] **0.7** Port design tokens out of `web/src/styles/variables.css` and
+- [x] **0.7** Port design tokens out of `web/src/styles/variables.css` and
       `web/src/context/ThemeContext.jsx` into `src/ui/theme/`. **Then delete `web/`.** Also
       delete the empty `mobile/` and `shared/` directories.
-- [ ] **0.8** Initialise the Expo app. The repo root is not empty, so scaffold into a temporary
+- [x] **0.8** Initialise the Expo app. The repo root is not empty, so scaffold into a temporary
       directory and move the generated files in — do not run the scaffolder over existing files.
       TypeScript template, Expo Router.
-- [ ] **0.9** `npx expo prebuild`, then `npx expo run:android`. See §3.1 — this is required now,
+- [x] **0.9** `npx expo prebuild`, then `npx expo run:android`. See §3.1 — this is required now,
       not at Phase 6.
-- [ ] **0.10** Create `CHANGELOG.md` (Keep a Changelog) with an `[Unreleased]` section carrying
+- [x] **0.10** Create `CHANGELOG.md` (Keep a Changelog) with an `[Unreleased]` section carrying
       `Platforms: Android ✓ | iOS — | Web —`. Set `version` to `0.1.0` in `package.json` and
       `app.json`; set `android.versionCode` to `1`.
-- [ ] **0.11** Configure `tsconfig.json` path aliases for `src/*`, and `vitest.config.ts`
+- [x] **0.11** Configure `tsconfig.json` path aliases for `src/*`, and `vitest.config.ts`
       scoped to `src/core/**`.
 
 **Verify.** `git status` shows no `.db`, `.env`, `__pycache__`, or `node_modules`.
@@ -688,17 +688,17 @@ Tag: `v0.1.0-alpha.1` · Location: `src/core/` · No React, no SQLite, no I/O.
 This is where the correctness that everything else depends on lives. Build it before anything
 can call it.
 
-- [ ] **1.1** `src/core/money/` — minor-unit arithmetic, currency-aware formatting, and
+- [x] **1.1** `src/core/money/` — minor-unit arithmetic, currency-aware formatting, and
       **deterministic remainder distribution**. Splitting 100 three ways gives 34/33/33 with a
       stable, reproducible rule for who absorbs the extra unit. Every device computes this
       independently from the same CRDT state, so the rule must not depend on iteration order,
       locale, or wall-clock time.
-- [ ] **1.2** `src/core/split/` — `EQUAL`, `EXACT`, `PERCENT`, `SHARES`, plus partial item shares
+- [x] **1.2** `src/core/split/` — `EQUAL`, `EXACT`, `PERCENT`, `SHARES`, plus partial item shares
       as rationals (`weight_num`/`weight_den`). "Alice takes a third of the wine" is `1/3`,
       never `0.3333`.
-- [ ] **1.3** `src/core/balance/` — pair netting, roll-up across groups, multi-hop debt
+- [x] **1.3** `src/core/balance/` — pair netting, roll-up across groups, multi-hop debt
       simplification.
-- [ ] **1.4** `src/core/reconcile/` — candidate matching on amount equality plus date proximity.
+- [x] **1.4** `src/core/reconcile/` — candidate matching on amount equality plus date proximity.
       Returns **scored candidates**, not a single answer; the caller decides what to do with a
       tie.
 
@@ -713,12 +713,12 @@ input reordering.
 
 Tag: `v0.1.0-alpha.2` · Location: `src/db/`
 
-- [ ] **2.1** `src/db/schema.sql` — §4.3, verbatim. Do not edit it while transcribing; a change
+- [x] **2.1** `src/db/schema.sql` — §4.3, verbatim. Do not edit it while transcribing; a change
       here is a STOP (§0.2).
-- [ ] **2.2** `src/db/migrations/` — forward-only runner writing to `schema_migrations`.
-- [ ] **2.3** `src/db/queries/` — typed helpers, one module per screen in §5. **No ad-hoc SQL in
+- [x] **2.2** `src/db/migrations/` — forward-only runner writing to `schema_migrations`.
+- [x] **2.3** `src/db/queries/` — typed helpers, one module per screen in §5. **No ad-hoc SQL in
       components.**
-- [ ] **2.4** A fixture dataset covering: a `HEADER_ONLY` statement expense; an `ITEMIZED`
+- [x] **2.4** A fixture dataset covering: a `HEADER_ONLY` statement expense; an `ITEMIZED`
       receipt with a partial item split; a three-person group; a pair; a settlement spanning two
       groups; a multi-currency expense.
 
@@ -732,17 +732,17 @@ from the same fixtures.
 
 Tag: `v0.1.0-alpha.3` · Location: `src/crdt/`, `src/db/projector.ts`
 
-- [ ] **3.1** **Spike first.** Confirm `yjs` loads and merges correctly under Hermes on the
+- [x] **3.1** **Spike first.** Confirm `yjs` loads and merges correctly under Hermes on the
       Android dev build before writing anything that depends on it. This is the plan's largest
       technical assumption (ADR-002). If it fails, STOP — do not work around it.
-- [ ] **3.2** `src/crdt/doc.ts` — the document schema from ADR-004: `meta`, `members`,
+- [x] **3.2** `src/crdt/doc.ts` — the document schema from ADR-004: `meta`, `members`,
       `transactions`, `lines`, `splitSets` (atomic LWW register per scope), `settlements`
       (append-only).
-- [ ] **3.3** `src/crdt/write.ts` — the ownership-checked write API (ADR-005). Violations are
+- [x] **3.3** `src/crdt/write.ts` — the ownership-checked write API (ADR-005). Violations are
       **rejected with an error**, never silently merged.
-- [ ] **3.4** `src/db/projector.ts` — Yjs update to SQL rows, driven off `crdt_updates`. The only
+- [x] **3.4** `src/db/projector.ts` — Yjs update to SQL rows, driven off `crdt_updates`. The only
       writer of derived tables (§0.1 rule 5).
-- [ ] **3.5** Full rebuild path: drop derived tables, replay the op-log, arrive at identical
+- [x] **3.5** Full rebuild path: drop derived tables, replay the op-log, arrive at identical
       state.
 
 **Verify.** A simulated three-device test in which concurrent edits applied in **different
