@@ -20,7 +20,7 @@ describe('doc schema accessors', () => {
     getMeta(doc).set('defaultCurrency', 'INR');
     getMeta(doc).set('isPair', false);
 
-    getMembers(doc).set('usr_alice', { userId: 'usr_alice', role: 'owner', joinedAt: '2026-01-01' });
+    getMembers(doc).set('usr_alice', { userId: 'usr_alice', role: 'owner', joinedAt: '2026-01-01', deletedAt: null });
 
     const header: TransactionHeader = {
       trxnId: 'trx_1',

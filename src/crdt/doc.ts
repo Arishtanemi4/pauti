@@ -15,6 +15,7 @@ export interface GroupMember {
   userId: string;
   role: 'owner' | 'member';
   joinedAt: string;
+  deletedAt: string | null;
 }
 
 export interface TransactionHeader {
