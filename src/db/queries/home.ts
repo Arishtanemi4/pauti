@@ -1,8 +1,6 @@
 import { SqliteExecutor } from '../migrations/runner';
 import { CurrencyAmount } from './types';
 
-export type Period = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-
 export interface BalanceTile {
   readonly currency: string;
   readonly owedToMeMinorUnits: number;

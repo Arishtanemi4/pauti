@@ -10,6 +10,13 @@ const path = require('path');
 const config = getDefaultConfig(__dirname);
 const upstreamResolveRequest = config.resolver.resolveRequest;
 
+// tsconfig.json's "paths": { "src/*": ["./src/*"] } only affects tsc's type-checking — Metro
+// needs its own equivalent, or `import ... from 'src/ui/theme'` fails to bundle at runtime.
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  src: path.resolve(__dirname, 'src'),
+};
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === 'lib0/webcrypto') {
     return {
