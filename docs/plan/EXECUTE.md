@@ -768,6 +768,14 @@ All screens read real data through `src/db/queries/`.
 **Verify.** The Android dev build runs all four screens against the Phase 2 fixture set, and
 every displayed figure matches what `src/core` derives. `npx tsc --noEmit` exits zero.
 
+**Known issue (cosmetic, not a Verify blocker — every figure is correct and legible).** List-row
+labels clip in a few places: Home's recent-activity descriptions (`Expense` → `Expens`), Chat's
+contact names (`carol` → `caro`), Groups' group names (`Trio` → `Tri`, `Alice & Bob` → `Alice &`).
+The label `Text` in each row needs `flexShrink: 1` (and probably `numberOfLines={1}` with
+`ellipsizeMode`) — currently only the amount `Text` is sized correctly. Affects
+`app/(tabs)/index.tsx`, `app/(tabs)/chat.tsx`, `app/(tabs)/groups.tsx`. Fix whenever this is
+picked back up; not worth a rebuild cycle on its own.
+
 ---
 
 ### Phase 5 — Entry, splitting and settlement
