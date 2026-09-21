@@ -9,7 +9,7 @@
 // All amounts are integer minor units (paise). Dates are fixed, not wall-clock, so tests
 // are reproducible.
 
-import { SqliteExecutor } from '../migrations/runner';
+import { SqliteExecutor } from './migrations/runner';
 
 export const FIXTURE_IDS = {
   users: { alice: 'usr_alice', bob: 'usr_bob', carol: 'usr_carol' },
@@ -23,7 +23,7 @@ export async function seedFixtures(db: SqliteExecutor): Promise<void> {
 
   await exec(
     `INSERT INTO devices (device_id, device_name, public_key, is_self) VALUES (?, ?, ?, 1)`,
-    [device, 'Fixture device', Buffer.from('fixture')]
+    [device, 'Fixture device', new Uint8Array([102, 105, 120, 116, 117, 114, 101])] // "fixture"
   );
 
   for (const [key, id] of Object.entries(FIXTURE_IDS.users)) {

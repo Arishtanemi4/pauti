@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { SqliteExecutor, runMigrations } from '../migrations/runner';
 import { migrations } from '../migrations';
 import { createNodeSqliteExecutor } from '../testing/nodeSqliteExecutor';
-import { seedFixtures, FIXTURE_IDS } from '../testing/fixtures';
+import { seedFixtures, FIXTURE_IDS } from '../fixtures';
 import { getGroupOptions, getStoreOptions } from './add';
 
 let db: SqliteExecutor;

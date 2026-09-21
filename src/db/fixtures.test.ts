@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createNodeSqliteExecutor } from './nodeSqliteExecutor';
-import { runMigrations } from '../migrations/runner';
-import { migrations } from '../migrations';
+import { createNodeSqliteExecutor } from './testing/nodeSqliteExecutor';
+import { runMigrations } from './migrations/runner';
+import { migrations } from './migrations';
 import { seedFixtures } from './fixtures';
 
 describe('seedFixtures', () => {
