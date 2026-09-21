@@ -756,12 +756,12 @@ reproduces the live database exactly.
 
 Tag: `v0.1.0-alpha.4`
 
-- [ ] **4.1** Expo Router tab navigator: Home · Chat · Add · Groups, themed from `src/ui/theme/`.
-- [ ] **4.2** Home (§5.1) — including the single switchable D/W/M/Y component.
-- [ ] **4.3** Chat list and thread (§5.2).
-- [ ] **4.4** Groups list and detail (§5.4).
-- [ ] **4.5** Add Expense shell (§5.3) — layout and navigation only; entry logic is Phase 5.
-- [ ] **4.6** `.web.ts` throwing stubs for `src/platform/ocr` and `src/platform/pdf` (§1.3).
+- [x] **4.1** Expo Router tab navigator: Home · Chat · Add · Groups, themed from `src/ui/theme/`.
+- [x] **4.2** Home (§5.1) — including the single switchable D/W/M/Y component.
+- [x] **4.3** Chat list and thread (§5.2).
+- [x] **4.4** Groups list and detail (§5.4).
+- [x] **4.5** Add Expense shell (§5.3) — layout and navigation only; entry logic is Phase 5.
+- [x] **4.6** `.web.ts` throwing stubs for `src/platform/ocr` and `src/platform/pdf` (§1.3).
 
 All screens read real data through `src/db/queries/`.
 
