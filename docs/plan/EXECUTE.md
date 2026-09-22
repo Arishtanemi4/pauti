@@ -815,17 +815,17 @@ Tag: `v0.1.0-alpha.6` · **In scope for v0.1.0.**
 Bank statements need no OCR. Typical bank PDFs carry a text layer, which
 `expo-pdf-text-extract` reads natively via PDFBox on Android — fast and exact (ADR-009).
 
-- [ ] **6.1** In `ml/`: develop the statement parser against the 3 fixture PDFs. Record the
+- [x] **6.1** In `ml/`: develop the statement parser against the 3 fixture PDFs. Record the
       resulting field-level accuracy in `ml/README.md`.
-- [ ] **6.2** `src/platform/pdf.ts` — text-layer extraction. `pdf.web.ts` throws.
-- [ ] **6.3** `src/parse/statement.ts` — extracted text to structured draft. Port from the
+- [x] **6.2** `src/platform/pdf.ts` — text-layer extraction. `pdf.web.ts` throws.
+- [x] **6.3** `src/parse/statement.ts` — extracted text to structured draft. Port from the
       validated `ml/` parser.
-- [ ] **6.4** CSV import as well as PDF. Most banks export CSV, and it is strictly more reliable
+- [x] **6.4** CSV import as well as PDF. Most banks export CSV, and it is strictly more reliable
       than any parser.
-- [ ] **6.5** Review screen (§5.6), then write to `statement_entries`. `source_row_hash` +
+- [x] **6.5** Review screen (§5.6), then write to `statement_entries`. `source_row_hash` +
       the `UNIQUE` constraint make re-importing overlapping statements idempotent, which real
       users do constantly.
-- [ ] **6.6** Reconciliation: `src/core/reconcile` links a statement entry to a transaction and
+- [x] **6.6** Reconciliation: `src/core/reconcile` links a statement entry to a transaction and
       sets `reconciled_entry_id` and `match_status`.
 
 **Verify.** Golden-file tests over the 3 fixture statements with a recorded accuracy figure.
