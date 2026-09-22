@@ -7,6 +7,7 @@ export default defineConfig({
       'src/db/**/*.{test,spec}.ts',
       'src/crdt/**/*.{test,spec}.ts',
       'src/platform/**/*.{test,spec}.ts',
+      'src/parse/**/*.{test,spec}.ts',
     ],
     passWithNoTests: true,
   },

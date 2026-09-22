@@ -3,12 +3,18 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 import { useDatabase } from 'src/ui/DatabaseContext';
 import { useTheme } from 'src/ui/theme';
 import { parseToMinorUnits } from 'src/core/money';
 import { newId } from 'src/core/id';
+import { fnv1a } from 'src/core/hash';
 import { writeToGroup } from 'src/crdt/store';
 import { createTransaction, setLine } from 'src/crdt/write';
+import { extractPdfText } from 'src/platform/pdf';
+import { parseStatementCsv, parseStatementText } from 'src/parse/statement';
+import { createStatementArtifact, findArtifactByFileHash } from 'src/db/queries/statements';
 import { GroupOption, PaymentModeOption, StoreOption, getGroupOptions, getPaymentModeOptions, getStoreOptions } from 'src/db/queries/add';
 import { GroupMember, getGroupMembers } from 'src/db/queries/groups';
 
@@ -47,6 +53,8 @@ export default function AddExpense() {
   const [lines, setLines] = useState<DraftLine[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,6 +109,41 @@ export default function AddExpense() {
   };
 
   const canContinue = groupId !== null && payerUserId !== null && date.length > 0 && amountText.length > 0 && currency.length === 3;
+
+  const handleImportStatement = async () => {
+    setImportError(null);
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'text/csv', 'text/comma-separated-values'],
+    });
+    if (result.canceled) return;
+
+    setImporting(true);
+    try {
+      const asset = result.assets[0];
+      const isCsv = asset.mimeType === 'text/csv' || asset.name.toLowerCase().endsWith('.csv');
+      const rawText = isCsv ? await new File(asset.uri).text() : await extractPdfText(asset.uri);
+      const fileHash = fnv1a(rawText);
+
+      const existing = await findArtifactByFileHash(db, fileHash);
+      if (existing) {
+        router.push({ pathname: '/review/[artifactId]', params: { artifactId: existing.artifactId } });
+        return;
+      }
+
+      const parsed = isCsv ? parseStatementCsv(rawText) : parseStatementText(rawText);
+      const artifactId = await createStatementArtifact(db, {
+        fileUri: asset.uri,
+        fileHash,
+        rawText,
+        parsedJson: JSON.stringify(parsed),
+      });
+      router.push({ pathname: '/review/[artifactId]', params: { artifactId } });
+    } catch (e) {
+      setImportError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const handleCreate = async () => {
     setError(null);
@@ -361,7 +404,16 @@ export default function AddExpense() {
         </View>
       )}
 
-      <Text style={{ color: theme.textSecondary }}>Scan receipt and Import statement will live here (Phase 6/7).</Text>
+      <Pressable
+        disabled={importing}
+        onPress={handleImportStatement}
+        style={[styles.secondaryButton, { borderColor: theme.accentPrimary }]}
+      >
+        <Text style={{ color: theme.accentPrimary }}>{importing ? 'Importing...' : 'Import bank statement'}</Text>
+      </Pressable>
+      {importError && <Text style={{ color: theme.accentSecondary }}>{importError}</Text>}
+
+      <Text style={{ color: theme.textSecondary }}>Scan receipt will live here (Phase 7).</Text>
     </ScrollView>
   );
 }
