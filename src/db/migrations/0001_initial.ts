@@ -270,7 +270,7 @@ CREATE INDEX ix_settlements_parties ON settlements(from_user_id, to_user_id, set
 CREATE TABLE settlement_allocations (
   allocation_id        TEXT PRIMARY KEY,
   settlement_id        TEXT NOT NULL REFERENCES settlements(settlement_id) ON DELETE CASCADE,
-  split_id             TEXT NOT NULL REFERENCES expense_splits(split_id),
+  split_id             TEXT NOT NULL REFERENCES expense_splits(split_id) ON DELETE CASCADE,
   amount               INTEGER NOT NULL CHECK (amount > 0),
   currency             TEXT NOT NULL CHECK (length(currency) = 3),
   created_at           TEXT NOT NULL DEFAULT (datetime('now')),

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link } from 'expo-router';
 import { useDatabase } from 'src/ui/DatabaseContext';
 import { useTheme } from 'src/ui/theme';
@@ -39,14 +39,14 @@ export default function ChatList() {
           const isOwedToMe = net !== undefined && net.amountMinorUnits > 0;
           return (
             <Link href={{ pathname: '/chat/[userId]', params: { userId: item.userId } }} asChild>
-              <View style={styles.row}>
+              <Pressable style={styles.row}>
                 <Text style={{ color: theme.textPrimary }}>{names[item.userId] ?? item.userId}</Text>
                 {net && (
                   <Text style={{ color: isOwedToMe ? theme.accentPrimary : theme.textSecondary }}>
                     {formatMinorUnits(Math.abs(net.amountMinorUnits), net.currency)}
                   </Text>
                 )}
-              </View>
+              </Pressable>
             </Link>
           );
         }}

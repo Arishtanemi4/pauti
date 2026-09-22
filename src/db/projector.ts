@@ -11,7 +11,7 @@ import * as Y from 'yjs';
 import { SqliteExecutor } from './migrations/runner';
 import { getLines, getMembers, getMeta, getSettlements, getSplitSets, getTransactions } from '../crdt/doc';
 
-async function loadGroupDoc(db: SqliteExecutor, crdtDocId: string): Promise<Y.Doc> {
+export async function loadGroupDoc(db: SqliteExecutor, crdtDocId: string): Promise<Y.Doc> {
   const doc = new Y.Doc();
   const rows = await db.getAllAsync<{ payload: Uint8Array }>(
     `SELECT payload FROM crdt_updates WHERE crdt_doc_id = ? ORDER BY update_id`,
@@ -112,19 +112,37 @@ export async function projectGroupDoc(db: SqliteExecutor, groupId: string, doc: 
   }
 
   // splitSets — an atomic register per scope: replace that scope's rows wholesale, matching
-  // ADR-004 exactly (never merge old and new shares).
+  // ADR-004 exactly (never merge old and new shares). Rows for debtors no longer in the scope
+  // are deleted (cascading any settlement_allocations tied to that now-gone share); rows for
+  // debtors still in the scope are upserted in place, keeping their split_id stable so
+  // settlement_allocations referencing them survive a replay untouched.
   for (const splitSet of getSplitSets(doc).values()) {
     const header = getTransactions(doc).get(splitSet.trxnId);
     if (!header || header.groupId !== groupId) continue;
 
-    await db.runAsync(`DELETE FROM expense_splits WHERE scope_key = ?`, [splitSet.scopeKey]);
+    const newDebtorIds = new Set(splitSet.shares.map((share) => share.debtorId));
+    const existingRows = await db.getAllAsync<{ debtor_id: string }>(
+      `SELECT debtor_id FROM expense_splits WHERE scope_key = ?`,
+      [splitSet.scopeKey]
+    );
+    for (const row of existingRows) {
+      if (!newDebtorIds.has(row.debtor_id)) {
+        await db.runAsync(`DELETE FROM expense_splits WHERE scope_key = ? AND debtor_id = ?`, [
+          splitSet.scopeKey,
+          row.debtor_id,
+        ]);
+      }
+    }
     for (const share of splitSet.shares) {
       const splitId = `splt_${splitSet.scopeKey}_${share.debtorId}`;
       await db.runAsync(
         `INSERT INTO expense_splits
            (split_id, trxn_id, line_id, scope_key, debtor_id, owed_amount, currency, split_mode,
             weight_num, weight_den, created_by_device_id, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+         ON CONFLICT(split_id) DO UPDATE SET
+           owed_amount = excluded.owed_amount, currency = excluded.currency, split_mode = excluded.split_mode,
+           weight_num = excluded.weight_num, weight_den = excluded.weight_den, updated_at = excluded.updated_at`,
         [
           splitId,
           splitSet.trxnId,

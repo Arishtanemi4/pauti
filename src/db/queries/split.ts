@@ -22,6 +22,8 @@ export interface SplitEditorSplit {
 
 export interface SplitEditorData {
   readonly trxnId: string;
+  readonly groupId: string;
+  readonly crdtDocId: string;
   readonly totalAmountMinorUnits: number;
   readonly currency: string;
   readonly lines: SplitEditorLine[];
@@ -29,8 +31,17 @@ export interface SplitEditorData {
 }
 
 export async function getSplitEditorData(db: SqliteExecutor, trxnId: string): Promise<SplitEditorData | undefined> {
-  const [header] = await db.getAllAsync<{ trxn_id: string; total_amount: number; currency: string }>(
-    `SELECT trxn_id, total_amount, currency FROM transaction_header WHERE trxn_id = ? AND deleted_at IS NULL`,
+  const [header] = await db.getAllAsync<{
+    trxn_id: string;
+    group_id: string;
+    crdt_doc_id: string;
+    total_amount: number;
+    currency: string;
+  }>(
+    `SELECT h.trxn_id, h.group_id, g.crdt_doc_id, h.total_amount, h.currency
+     FROM transaction_header h
+     JOIN groups g ON g.group_id = h.group_id
+     WHERE h.trxn_id = ? AND h.deleted_at IS NULL`,
     [trxnId]
   );
   if (!header) return undefined;
@@ -50,6 +61,8 @@ export async function getSplitEditorData(db: SqliteExecutor, trxnId: string): Pr
 
   return {
     trxnId: header.trxn_id,
+    groupId: header.group_id,
+    crdtDocId: header.crdt_doc_id,
     totalAmountMinorUnits: header.total_amount,
     currency: header.currency,
     lines,

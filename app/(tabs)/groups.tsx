@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link } from 'expo-router';
 import { useDatabase } from 'src/ui/DatabaseContext';
 import { useTheme } from 'src/ui/theme';
@@ -29,14 +29,14 @@ export default function GroupsList() {
         keyExtractor={(item) => item.groupId}
         renderItem={({ item }) => (
           <Link href={{ pathname: '/groups/[groupId]', params: { groupId: item.groupId } }} asChild>
-            <View style={styles.row}>
+            <Pressable style={styles.row}>
               <Text style={{ color: theme.textPrimary }}>{item.groupName}</Text>
               {item.netPosition.map((n) => (
                 <Text key={n.currency} style={{ color: theme.textSecondary }}>
                   {formatMinorUnits(n.amountMinorUnits, n.currency)}
                 </Text>
               ))}
-            </View>
+            </Pressable>
           </Link>
         )}
         ListEmptyComponent={<Text style={{ color: theme.textSecondary }}>No groups yet</Text>}

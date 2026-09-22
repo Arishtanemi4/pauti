@@ -3,7 +3,7 @@
     "original": null,
     "holders": [
       {
-        "pid": 12308,
+        "pid": 24100,
         "start_src": null,
         "start_time": null,
         "port": 8787,
@@ -12,10 +12,10 @@
     ]
   },
   "ENABLE_TOOL_SEARCH": {
-    "original": null,
+    "original": "true",
     "holders": [
       {
-        "pid": 12308,
+        "pid": 24100,
         "start_src": null,
         "start_time": null,
         "port": null,

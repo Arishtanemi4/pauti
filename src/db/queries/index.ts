@@ -5,3 +5,4 @@ export * from './groups';
 export * from './add';
 export * from './split';
 export * from './review';
+export * from './settle';

@@ -6,6 +6,8 @@ import { SqliteExecutor } from '../migrations/runner';
 export interface GroupOption {
   readonly groupId: string;
   readonly groupName: string;
+  readonly crdtDocId: string;
+  readonly defaultCurrency: string;
 }
 
 export interface StoreOption {
@@ -20,7 +22,8 @@ export interface PaymentModeOption {
 
 export async function getGroupOptions(db: SqliteExecutor, selfUserId: string): Promise<GroupOption[]> {
   return db.getAllAsync<GroupOption>(
-    `SELECT g.group_id AS groupId, g.group_name AS groupName
+    `SELECT g.group_id AS groupId, g.group_name AS groupName, g.crdt_doc_id AS crdtDocId,
+            g.default_currency AS defaultCurrency
      FROM groups g
      JOIN group_members m ON m.group_id = g.group_id
      WHERE m.user_id = ? AND g.deleted_at IS NULL AND m.deleted_at IS NULL

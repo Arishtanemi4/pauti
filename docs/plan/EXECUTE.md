@@ -782,16 +782,29 @@ picked back up; not worth a rebuild cycle on its own.
 
 Tag: `v0.1.0-alpha.5`
 
-- [ ] **5.1** Manual expense entry, all three steps of §5.3.
-- [ ] **5.2** `app/split/[trxnId].tsx` — the item-level split editor with partial shares and the
+- [x] **5.1** Manual expense entry, all three steps of §5.3.
+- [x] **5.2** `app/split/[trxnId].tsx` — the item-level split editor with partial shares and the
       "remaining to allocate" readout (§5.5).
-- [ ] **5.3** Header-level equal and unequal split, including the unitemized remainder.
-- [ ] **5.4** Settle-up from the chat thread **and** from the group screen, both writing
+- [x] **5.3** Header-level equal and unequal split, including the unitemized remainder.
+- [x] **5.4** Settle-up from the chat thread **and** from the group screen, both writing
       `settlements` + `settlement_allocations`.
 
 **Verify.** End to end on device: create a group bill, split one item three ways unequally,
 settle from the chat screen, and confirm the group screen reflects it **without a second
 write**. Confirm an expense saved with no line items lands as `detail_level = HEADER_ONLY`.
+
+- [x] Confirmed end to end on a physical Android device: created a Pizza expense in Trio,
+      split it EXACT/unequal (alice/bob/carol), settled bob→alice from chat, and confirmed
+      the group screen reflected it without a second write. Creating a follow-up expense with
+      no line items landed as `detail_level = HEADER_ONLY` with no FK error, and a direct
+      on-device SQLite check confirmed all `settlement_allocations` remained intact and
+      correctly summed after the reprojection. This surfaced and fixed a real bug: the
+      `ON DELETE CASCADE` added for the FK crash made `projectGroupDoc`'s wholesale
+      delete-then-reinsert of `expense_splits` silently drop `settlement_allocations` rows
+      whose owning settlement lives in a different group's CRDT doc (ADR-006). Fixed by
+      rewriting that loop as a diff-based upsert (`src/db/projector.ts`) that preserves
+      `split_id` continuity for debtors still in the scope, deleting only rows for debtors
+      genuinely removed from it. Regression test: `src/db/projector.settlement-cascade.test.ts`.
 
 ---
 
