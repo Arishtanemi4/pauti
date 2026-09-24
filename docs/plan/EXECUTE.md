@@ -849,7 +849,7 @@ bounded by the 14 fixture receipts (ADR-009).
       against all 14 fixtures. Measure **line-item extraction accuracy** and write the number
       into ADR-009 whether it passes or fails. Measured **98.7%** (75/76), 14/14 totals exact —
       meets the 90% bar.
-- [ ] **7.2** **Gate.**
+- [x] **7.2** **Gate.**
       - **Meets the bar** → finish: capture flow, review screen (§5.6), write to the ledger,
         link to a statement entry where one matches. Ships in v0.1.0.
       - **Misses the bar** → stop work here. Record the measured figure and the decision in
@@ -859,6 +859,19 @@ bounded by the 14 fixture receipts (ADR-009).
 **Verify.** The measured accuracy figure is recorded in ADR-009 regardless of outcome. If
 shipped: golden-file tests over the 14 fixtures, and no OCR result can reach the database
 without passing review.
+
+- [x] Confirmed end to end on a physical Android device: Add Expense → Scan receipt → camera
+      capture → on-device ML Kit OCR → `parseReceiptOcr` → `ocr_artifacts` row → the review
+      screen correctly dispatched on `kind = 'RECEIPT'` (group/payer/date/currency/items/total
+      form, distinct from the statement branch) → Reject this receipt returned cleanly with no
+      write reaching the ledger. Since the test photo wasn't an actual receipt, the save path
+      (CRDT `writeToGroup`/`createTransaction`/`setLine`, `acceptReceiptArtifact`,
+      `computeMatchSuggestions`) was exercised via `npx vitest run` (123/123) and by inspection
+      rather than committing a fake transaction to real ledger data. This surfaced and fixed a
+      real bug: the capture screen's "Capture receipt" button was rendered underneath the
+      system navigation bar (no safe-area handling on a full-bleed, chrome-less screen), making
+      it untappable on a 3-button-nav device. Fixed with `useSafeAreaInsets` from
+      `react-native-safe-area-context` in `app/scan-receipt.tsx`.
 
 ---
 

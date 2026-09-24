@@ -200,7 +200,11 @@ start.
 > out of row order (ML Kit splits them into separate name-column and price-column blocks), so
 > `src/parse/receipt.ts` pairs each money-pattern line to its row label by bounding-box y-proximity
 > instead of text adjacency. One item (of 76) was mispaired with a neighbouring row's price.
-> Phase 7 proceeds to task 7.2: capture flow, review screen, ledger write, statement linking.
+> Task 7.2 shipped: capture flow (`app/scan-receipt.tsx`), review screen dispatch on
+> `ocr_artifacts.kind` (`app/review/[artifactId].tsx`, §5.6), ledger write via
+> `src/crdt/write.ts`, and statement-entry linking through the existing kind-agnostic
+> `computeMatchSuggestions`. Confirmed end to end on a physical Android device (see
+> `docs/plan/EXECUTE.md` Phase 7.2).
 
 **Consequences.** Smaller app, predictable performance, testable parsers with a golden-file
 corpus and a measurable accuracy figure. Extraction quality will be lower than an LLM's; the
