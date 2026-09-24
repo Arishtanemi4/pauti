@@ -413,7 +413,9 @@ export default function AddExpense() {
       </Pressable>
       {importError && <Text style={{ color: theme.accentSecondary }}>{importError}</Text>}
 
-      <Text style={{ color: theme.textSecondary }}>Scan receipt will live here (Phase 7).</Text>
+      <Pressable onPress={() => router.push('/scan-receipt')} style={[styles.secondaryButton, { borderColor: theme.accentPrimary }]}>
+        <Text style={{ color: theme.accentPrimary }}>Scan receipt</Text>
+      </Pressable>
     </ScrollView>
   );
 }

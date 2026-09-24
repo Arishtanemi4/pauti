@@ -128,6 +128,23 @@ export async function computeMatchSuggestions(db: SqliteExecutor, userId: string
 }
 
 /** User-confirmed link: the only path that sets match_status = 'CONFIRMED'. */
+/** The suggested statement entry for a just-created transaction, if computeMatchSuggestions
+ * found one (Phase 7 task 7.2: link a scanned receipt to a statement entry where one matches). */
+export async function getSuggestedMatchForTransaction(
+  db: SqliteExecutor,
+  trxnId: string
+): Promise<UnmatchedStatementEntry | undefined> {
+  const [row] = await db.getAllAsync<UnmatchedStatementEntry>(
+    `SELECT entry_id AS entryId, statement_date AS statementDate, description, amount AS amountMinorUnits,
+            currency, matched_trxn_id AS matchedTrxnId, match_confidence AS matchConfidence,
+            match_status AS matchStatus
+     FROM statement_entries
+     WHERE matched_trxn_id = ? AND match_status = 'SUGGESTED' AND deleted_at IS NULL`,
+    [trxnId]
+  );
+  return row;
+}
+
 export async function confirmMatch(db: SqliteExecutor, entryId: string, trxnId: string): Promise<void> {
   await db.runAsync(
     `UPDATE statement_entries
