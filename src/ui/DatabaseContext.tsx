@@ -8,9 +8,17 @@ interface DatabaseContextValue {
   db: SqliteExecutor;
   selfUserId: string;
   selfDeviceId: string;
+  /** Re-reads the self user/device rows — called by app/onboarding.tsx once it creates them. */
+  refreshSelf: () => Promise<void>;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue | null>(null);
+
+async function loadSelf(db: SqliteExecutor): Promise<{ selfUserId: string; selfDeviceId: string }> {
+  const [self] = await db.getAllAsync<{ user_id: string }>('SELECT user_id FROM users WHERE is_self = 1');
+  const [device] = await db.getAllAsync<{ device_id: string }>('SELECT device_id FROM devices WHERE is_self = 1');
+  return { selfUserId: self?.user_id ?? '', selfDeviceId: device?.device_id ?? '' };
+}
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [value, setValue] = useState<DatabaseContextValue | null>(null);
@@ -22,12 +30,16 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       try {
         const db = await openDatabase();
         await initDatabase(db);
-        const [self] = await db.getAllAsync<{ user_id: string }>('SELECT user_id FROM users WHERE is_self = 1');
-        const [device] = await db.getAllAsync<{ device_id: string }>(
-          'SELECT device_id FROM devices WHERE is_self = 1'
-        );
+        const self = await loadSelf(db);
         if (!cancelled) {
-          setValue({ db, selfUserId: self?.user_id ?? '', selfDeviceId: device?.device_id ?? '' });
+          setValue({
+            db,
+            ...self,
+            refreshSelf: async () => {
+              const refreshed = await loadSelf(db);
+              setValue((v) => (v ? { ...v, ...refreshed } : v));
+            },
+          });
         }
       } catch (e) {
         if (!cancelled) {

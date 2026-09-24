@@ -879,16 +879,28 @@ without passing review.
 
 Tag: `v0.1.0-alpha.8` · Location: `src/platform/transport/`, `src/platform/crypto/`
 
-- [ ] **8.1** `crypto/` — libsodium device keypair and sync-file encryption.
-- [ ] **8.2** `transport/qr.ts` — QR handshake for pairing.
-- [ ] **8.3** `transport/file.ts` — encrypted sync-file export and import.
-- [ ] **8.4** `transport/lan.ts` — LAN peer sync, Android implementation. All three sit behind
+- [x] **8.1** `crypto/` — libsodium device keypair and sync-file encryption.
+- [x] **8.2** `transport/qr.ts` — QR handshake for pairing.
+- [x] **8.3** `transport/file.ts` — encrypted sync-file export and import.
+- [x] **8.4** `transport/lan.ts` — LAN peer sync, Android implementation. All three sit behind
       one interface so a relay could replace them later without touching `src/crdt` (ADR-007).
-- [ ] **8.5** Group invite and member-add over QR.
+- [x] **8.5** Group invite and member-add over QR.
 
 **Verify.** Two physical Android devices reach identical state over each transport with
 **airplane mode on**. Confirm zero network egress by inspecting traffic — do not assume it
 because no URL appears in the source.
+
+- [x] `npx tsc --noEmit` clean, `npx vitest run` 157/157 passing (new coverage: migration 0002,
+      `sync.ts`'s `ingestRemoteUpdate` idempotency, `qr.ts`, `envelope.ts` build/parse round-trip
+      and unpaired-sender rejection, `lanProtocol.ts`'s frame seal/open, state-vector diff and
+      persistence, `groups.ts`'s `getGroupDetail`/`createGroupSkeleton`), `npx expo prebuild`
+      resolves the new `react-native-libsodium` config plugin and all native deps cleanly. Design
+      recorded in ADR-014.
+- [ ] **Not yet done — the user's own physical-device pass** (same division of labor as Phase 5
+      and 7): pair two physical Android devices over QR, export/import a sync file, connect over
+      LAN with manual IP entry, and invite a member into a group with airplane mode on
+      throughout, confirming both devices converge to identical SQLite state and inspecting
+      traffic for zero network egress.
 
 ---
 

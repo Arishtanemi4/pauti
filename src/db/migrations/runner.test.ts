@@ -20,7 +20,7 @@ describe('runMigrations', () => {
     await runMigrations(db, migrations);
 
     const rows = await db.getAllAsync<{ version: number }>('SELECT version FROM schema_migrations');
-    expect(rows).toEqual([{ version: 1 }]);
+    expect(rows).toEqual([{ version: 1 }, { version: 2 }]);
   });
 
   it('is idempotent — running again applies nothing new', async () => {
@@ -29,6 +29,6 @@ describe('runMigrations', () => {
     await expect(runMigrations(db, migrations)).resolves.toBeUndefined();
 
     const rows = await db.getAllAsync<{ version: number }>('SELECT version FROM schema_migrations');
-    expect(rows).toEqual([{ version: 1 }]);
+    expect(rows).toEqual([{ version: 1 }, { version: 2 }]);
   });
 });

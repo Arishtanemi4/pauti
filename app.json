@@ -29,9 +29,10 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Pauti uses the camera to scan receipts."
+          "cameraPermission": "Pauti uses the camera to scan receipts and pair devices."
         }
-      ]
+      ],
+      ["react-native-libsodium", {}]
     ]
   }
 }

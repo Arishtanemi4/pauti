@@ -4,7 +4,7 @@ import { migrations } from '../migrations';
 import { createNodeSqliteExecutor } from '../testing/nodeSqliteExecutor';
 import { seedFixtures, FIXTURE_IDS } from '../fixtures';
 import { netBalances, simplifyDebts } from '../../core/balance';
-import { getGroupBalances, getGroupList, getGroupMembers } from './groups';
+import { createGroupSkeleton, getGroupBalances, getGroupDetail, getGroupList, getGroupMembers } from './groups';
 
 let db: SqliteExecutor;
 
@@ -93,5 +93,56 @@ describe('getGroupMembers', () => {
   it('returns every member of the three-person group', async () => {
     const members = await getGroupMembers(db, FIXTURE_IDS.groups.trio);
     expect(members.map((m) => m.userId).sort()).toEqual(Object.values(FIXTURE_IDS.users).sort());
+  });
+});
+
+describe('getGroupDetail', () => {
+  it('returns the fields a group invite QR needs', async () => {
+    const detail = await getGroupDetail(db, FIXTURE_IDS.groups.pairAB);
+    expect(detail).toEqual({
+      groupId: FIXTURE_IDS.groups.pairAB,
+      groupName: expect.any(String),
+      crdtDocId: expect.any(String),
+      defaultCurrency: expect.any(String),
+      isPair: true,
+    });
+  });
+
+  it('returns null for an unknown group', async () => {
+    expect(await getGroupDetail(db, 'grp_nope')).toBeNull();
+  });
+});
+
+describe('createGroupSkeleton', () => {
+  const invite = {
+    groupId: 'grp_invited',
+    crdtDocId: 'crdt_grp_invited',
+    groupName: 'Trip to Goa',
+    defaultCurrency: 'INR',
+    isPair: false,
+    createdByDeviceId: 'dev_fixture',
+  };
+
+  it('creates crdt_docs and groups rows for a never-before-seen invite', async () => {
+    await createGroupSkeleton(db, invite);
+
+    const [doc] = await db.getAllAsync<{ scope: string }>(`SELECT scope FROM crdt_docs WHERE crdt_doc_id = ?`, [
+      invite.crdtDocId,
+    ]);
+    expect(doc.scope).toBe('GROUP');
+
+    const [group] = await db.getAllAsync<{ group_name: string; crdt_doc_id: string }>(
+      `SELECT group_name, crdt_doc_id FROM groups WHERE group_id = ?`,
+      [invite.groupId]
+    );
+    expect(group).toEqual({ group_name: 'Trip to Goa', crdt_doc_id: invite.crdtDocId });
+  });
+
+  it('is idempotent — accepting the same invite twice does not error or duplicate rows', async () => {
+    await createGroupSkeleton(db, invite);
+    await createGroupSkeleton(db, invite);
+
+    const groups = await db.getAllAsync(`SELECT * FROM groups WHERE group_id = ?`, [invite.groupId]);
+    expect(groups).toHaveLength(1);
   });
 });

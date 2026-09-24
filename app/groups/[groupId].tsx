@@ -1,24 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDatabase } from 'src/ui/DatabaseContext';
 import { useTheme } from 'src/ui/theme';
 import { formatMinorUnits } from 'src/core/money';
 import { simplifyDebts, Settlement } from 'src/core/balance';
-import { getGroupBalances, getGroupMembers, GroupBalances, GroupMember } from 'src/db/queries/groups';
+import { GroupBalances, GroupDetail as GroupDetailRow, GroupMember, getGroupBalances, getGroupDetail, getGroupMembers } from 'src/db/queries/groups';
 import { recordSettlement } from 'src/crdt/settle';
 
 export default function GroupDetail() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const theme = useTheme();
+  const router = useRouter();
   const { db, selfDeviceId } = useDatabase();
+  const [detail, setDetail] = useState<GroupDetailRow | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [balances, setBalances] = useState<GroupBalances[]>([]);
   const [settling, setSettling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const [memberList, balanceList] = await Promise.all([getGroupMembers(db, groupId), getGroupBalances(db, groupId)]);
+    const [groupDetail, memberList, balanceList] = await Promise.all([
+      getGroupDetail(db, groupId),
+      getGroupMembers(db, groupId),
+      getGroupBalances(db, groupId),
+    ]);
+    setDetail(groupDetail);
     setMembers(memberList);
     setBalances(balanceList);
   };
@@ -51,6 +58,25 @@ export default function GroupDetail() {
           {m.username}
         </Text>
       ))}
+      {detail && (
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: '/pair',
+              params: {
+                groupId: detail.groupId,
+                crdtDocId: detail.crdtDocId,
+                groupName: detail.groupName,
+                defaultCurrency: detail.defaultCurrency,
+                isPair: detail.isPair ? '1' : '0',
+              },
+            })
+          }
+          style={[styles.addMemberButton, { borderColor: theme.textSecondary }]}
+        >
+          <Text style={{ color: theme.textPrimary }}>Add member</Text>
+        </Pressable>
+      )}
 
       <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Balances</Text>
       {balances.map(({ currency, memberNet }) => (
@@ -95,4 +121,5 @@ const styles = StyleSheet.create({
   section: { marginBottom: 8 },
   settleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
   settleButton: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
+  addMemberButton: { marginTop: 8, padding: 10, borderRadius: 8, borderWidth: 1, alignItems: 'center' },
 });

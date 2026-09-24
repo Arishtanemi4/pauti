@@ -303,6 +303,77 @@ be summarised in a single clause in EXECUTE.md with an ADR reference, never rest
 
 ---
 
+## ADR-014 — Sync: device identity, mutual QR pairing, one-recipient encryption
+
+**Status:** accepted
+
+**Context.** ADR-007 commits to offline-only transports (QR, sync-file, LAN) behind one
+interface, but not to how devices trust each other or how payloads are protected in transit.
+Two gaps surfaced starting Phase 8 that EXECUTE.md didn't specify: nothing ever created a self
+user/device outside dev fixtures, and no code path existed for "meet a device not seen before."
+
+**Decision.**
+
+- **Identity.** Each device generates one X25519 keypair (`react-native-libsodium`,
+  `crypto_box`) on first run. The private half never leaves `expo-secure-store`; the public half
+  is the `devices.public_key` BLOB, the same column already in the schema. `crypto_box` was
+  chosen over a signing-only keypair because it gives authenticated encryption in one primitive —
+  every sync payload (file or LAN) is both encrypted *and* tied to a specific sender, with no
+  second scheme needed.
+- **First run.** `app/onboarding.tsx` is a minimal name-only screen, shown by a `Gate` component
+  in `app/_layout.tsx` when `DatabaseContext` finds no `is_self = 1` user. It writes the self
+  user row and calls the same device-keypair bootstrap sync uses everywhere else
+  (`getOrCreateDeviceKeypair`).
+- **Pairing is two sequential QR scans, not one.** A camera scan is one-directional — B reading
+  A's code only tells B who A is. `app/pair.tsx` has both devices run the identical flow (show
+  code, then scan the other's), in either order; mutual trust exists only once each side has
+  scanned the other. There is no "host"/"joiner" asymmetry to get wrong.
+- **Payloads are encrypted to one already-paired recipient, not a shared group secret.** Both the
+  sync-file envelope (`SyncFileEnvelope`) and the LAN frame (`LanFrame`) carry the sender's
+  `deviceId` in cleartext alongside a `crypto_box` ciphertext. The receiver looks up that
+  device's known public key (from the `devices` table, populated only by a prior pairing scan)
+  to decrypt — an unpaired sender is rejected before decryption is even attempted, and
+  decryption succeeding is not by itself treated as proof of sender identity (a shared secret
+  would conflate "can decrypt" with "know who sent it"; per-device keys don't need that leap).
+- **LAN discovery is manual IP entry, not mDNS.** `react-native-tcp-socket` alone is the LAN
+  transport dependency; adding auto-discovery (e.g. `react-native-zeroconf`) would double the new
+  native surface for a convenience the app can do without at this scale (Simplicity First). One
+  device calls `getLocalIpAddress()` (`expo-network`) and shows it; the other types it in.
+- **Idempotent ingestion.** `crdt_updates` gains a nullable `payload_hash` column (migration
+  `0002_sync.ts`, FNV-1a over the base64 payload, reusing `src/core/hash.ts` as-is) with
+  `UNIQUE(crdt_doc_id, payload_hash)`. Locally-authored updates (`src/crdt/store.ts`) never set
+  it. Remote updates always go through `src/crdt/sync.ts`'s `ingestRemoteUpdate`, which does, so
+  re-importing the same sync file or replaying the same LAN update is a no-op — the same pattern
+  `source_row_hash` already uses for statement import.
+- **LAN handshake.** Both sides send `Y.encodeStateVector(doc)` per locally-known `crdt_doc_id`,
+  then each sends back `Y.encodeStateAsUpdate(doc, theirStateVector)` — only the diff the other
+  is missing — for every doc it recognises, then a `done` message. A doc the peer mentions that
+  this device has never seen (a fresh group invite, ADR-014's next point) diffs against
+  `Y.encodeStateVector(new Y.Doc())`, not an empty `Uint8Array()` — the latter is not a validly
+  encoded Yjs state vector and fails to decode. `crdt_docs.state_vector` — reserved in the schema
+  since an earlier phase but unused until now — is persisted after each doc syncs.
+- **Group invite reuses pairing, plus a group payload.** `app/pair.tsx` accepts a `groupId`
+  param; the inviter's QR then also carries `{ groupId, crdtDocId, groupName, defaultCurrency,
+  isPair }`. Scanning it bootstraps the group locally (`createGroupSkeleton`, idempotent) before
+  the invitee has any of its history — the invite QR exchanges identity and group membership
+  only; a sync-file or LAN sync (from the same pairing) is what actually transfers the data.
+
+**Consequences.** No relay, no shared secrets, no auto-discovery — three deliberate absences,
+each traded for less native surface and a simpler trust model, at the cost of needing physical
+proximity or a deliberate file hand-off (already accepted in ADR-007). Adding a relay later
+still only touches `src/platform/transport`, since every transport ends at the same
+`ingestRemoteUpdate` entry point regardless of how the bytes arrived.
+
+**Testability note.** `expo-secure-store`, `expo-file-system`, and `react-native-tcp-socket` all
+fail to load under Vitest (they pull in Flow-syntax React Native internals the test runner can't
+parse). Every transport is therefore split into a pure logic module (`envelope.ts`,
+`lanProtocol.ts`, `qr.ts` — DB queries and `sodium.ts` calls only, unit-tested directly) and a
+thin native I/O wrapper (`file.ts`, `lan.ts` — the sole importer of its native package, `export *`
+from the pure module, verified on-device instead), mirroring the existing `platform/sqlite.ts` /
+`platform/ocr.ts` boundary convention.
+
+---
+
 ## Superseded
 
 `docs/diagrams/PautiUML-v1.drawio` depicts schema v1. It is retained for history only. The

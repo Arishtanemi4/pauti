@@ -19,6 +19,69 @@ export interface GroupBalances {
   readonly currency: string;
 }
 
+/**
+ * Bootstraps a group this device has just been invited into (Phase 8.5): the invite QR carries
+ * enough of the group's identity to create its `crdt_docs` + `groups` rows locally, since
+ * projectGroupDoc only ever UPDATEs an existing `groups` row and never creates one. Idempotent —
+ * accepting the same invite twice (or the inviter re-sharing it) is a no-op on the second call.
+ * Membership itself is not written here; it arrives from the group's own CRDT history once
+ * synced (src/crdt/sync.ts), same as for a founding member.
+ */
+export async function createGroupSkeleton(
+  db: SqliteExecutor,
+  params: {
+    groupId: string;
+    crdtDocId: string;
+    groupName: string;
+    defaultCurrency: string;
+    isPair: boolean;
+    createdByDeviceId: string;
+  }
+): Promise<void> {
+  const { groupId, crdtDocId, groupName, defaultCurrency, isPair, createdByDeviceId } = params;
+
+  await db.runAsync(`INSERT INTO crdt_docs (crdt_doc_id, scope) VALUES (?, 'GROUP') ON CONFLICT(crdt_doc_id) DO NOTHING`, [
+    crdtDocId,
+  ]);
+  await db.runAsync(
+    `INSERT INTO groups (group_id, group_name, is_pair, default_currency, crdt_doc_id, created_by_device_id)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(group_id) DO NOTHING`,
+    [groupId, groupName, isPair ? 1 : 0, defaultCurrency, crdtDocId, createdByDeviceId]
+  );
+}
+
+export interface GroupDetail {
+  readonly groupId: string;
+  readonly groupName: string;
+  readonly crdtDocId: string;
+  readonly defaultCurrency: string;
+  readonly isPair: boolean;
+}
+
+/** The fields a group invite QR needs to carry (src/platform/transport/qr.ts's GroupInvitePayload). */
+export async function getGroupDetail(db: SqliteExecutor, groupId: string): Promise<GroupDetail | null> {
+  const [row] = await db.getAllAsync<{
+    group_id: string;
+    group_name: string;
+    crdt_doc_id: string;
+    default_currency: string;
+    is_pair: number;
+  }>(
+    `SELECT group_id, group_name, crdt_doc_id, default_currency, is_pair FROM groups
+     WHERE group_id = ? AND deleted_at IS NULL`,
+    [groupId]
+  );
+  if (!row) return null;
+  return {
+    groupId: row.group_id,
+    groupName: row.group_name,
+    crdtDocId: row.crdt_doc_id,
+    defaultCurrency: row.default_currency,
+    isPair: row.is_pair === 1,
+  };
+}
+
 /** Group list with the self user's net position in each group they belong to. */
 export async function getGroupList(db: SqliteExecutor, selfUserId: string): Promise<GroupListItem[]> {
   const groups = await db.getAllAsync<{ group_id: string; group_name: string; is_pair: number }>(

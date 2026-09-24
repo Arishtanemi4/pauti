@@ -8,19 +8,27 @@
     "expo-document-picker": "~57.0.2",
     "expo-file-system": "~57.0.7",
     "expo-mlkit-ocr": "^0.2.7",
+    "expo-network": "^57.0.2",
     "expo-pdf-text-extract": "^1.1.0",
     "expo-router": "~57.0.22",
+    "expo-secure-store": "^57.0.4",
+    "expo-sharing": "^57.0.21",
     "expo-sqlite": "~57.0.3",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3",
+    "react-native-libsodium": "^1.7.0",
+    "react-native-qrcode-svg": "^6.3.26",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-svg": "^15.15.5",
+    "react-native-tcp-socket": "^6.4.3",
     "yjs": "^13.6.32"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3",
+    "vite": "^8.3.0",
     "vitest": "^5.0.1"
   },
   "scripts": {

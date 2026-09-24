@@ -367,3 +367,17 @@ CREATE VIEW v_directed_balance AS
 SELECT creditor_id, debtor_id, currency, SUM(outstanding_amount) AS gross_amount
 FROM v_split_outstanding
 GROUP BY creditor_id, debtor_id, currency;
+
+-- --------------------------------------------------------------------------
+-- Sync (Phase 8). payload_hash de-duplicates crdt_updates rows ingested from
+-- a sync file or a LAN peer (src/crdt/sync.ts). Locally-authored rows leave
+-- it NULL and are exempt, since SQLite treats NULL as distinct in a UNIQUE
+-- index.
+-- --------------------------------------------------------------------------
+ALTER TABLE crdt_updates ADD COLUMN payload_hash TEXT;
+CREATE UNIQUE INDEX ux_crdt_updates_dedup ON crdt_updates(crdt_doc_id, payload_hash);
+
+-- getOrCreateDeviceKeypair (src/platform/crypto/deviceKeys.ts) is the first code outside dev
+-- fixtures to insert a self device row; guard against a concurrent double-run the same way
+-- ux_users_self already guards users.
+CREATE UNIQUE INDEX ux_devices_self ON devices(is_self) WHERE is_self = 1;

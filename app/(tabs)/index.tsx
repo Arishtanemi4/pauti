@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Link } from 'expo-router';
 import { useDatabase } from 'src/ui/DatabaseContext';
 import { useTheme } from 'src/ui/theme';
 import { formatMinorUnits } from 'src/core/money';
@@ -42,6 +43,12 @@ export default function Home() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bgPrimary }]}>
+      <Link href="/sync" asChild>
+        <Pressable style={styles.syncLink}>
+          <Text style={{ color: theme.accentPrimary }}>Sync</Text>
+        </Pressable>
+      </Link>
+
       <View style={styles.periodRow}>
         {PERIODS.map((p) => (
           <Pressable
@@ -103,6 +110,7 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
+  syncLink: { alignSelf: 'flex-end', marginBottom: 8 },
   periodRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   periodButton: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 8 },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', marginTop: 16, marginBottom: 8 },
