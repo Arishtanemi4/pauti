@@ -5,6 +5,10 @@
 *GEMINI.md*
 .DS_Store
 
+# headroom MCP runtime state — local PID/port bookkeeping, not project state
+.claude/.headroom_wrap_marker.json
+.claude/.headroom_wrap_owners.json
+
 # Python
 __pycache__/
 *.py[cod]
