@@ -843,11 +843,12 @@ There is **no model to train or fine-tune.** ML Kit Text Recognition v2 is pretr
 fully on-device, and covers Latin and Devanagari. The work here is parser engineering, and it is
 bounded by the 14 fixture receipts (ADR-009).
 
-- [ ] **7.0** **STOP — ask the user for the accuracy bar and the timebox** before starting.
+- [x] **7.0** **STOP — ask the user for the accuracy bar and the timebox** before starting.
       Record both in `architecture.md` under ADR-009.
-- [ ] **7.1** Spike, within the timebox: `expo-mlkit-ocr` → `src/parse/receipt.ts`, evaluated
+- [x] **7.1** Spike, within the timebox: `expo-mlkit-ocr` → `src/parse/receipt.ts`, evaluated
       against all 14 fixtures. Measure **line-item extraction accuracy** and write the number
-      into ADR-009 whether it passes or fails.
+      into ADR-009 whether it passes or fails. Measured **98.7%** (75/76), 14/14 totals exact —
+      meets the 90% bar.
 - [ ] **7.2** **Gate.**
       - **Meets the bar** → finish: capture flow, review screen (§5.6), write to the ledger,
         link to a statement entry where one matches. Ships in v0.1.0.
