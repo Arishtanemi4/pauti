@@ -193,8 +193,14 @@ the bar → ship in v0.1.0. Misses → ship manual entry and defer to v0.2.0. Ei
 proceeds; the gate never blocks the release. The user sets the bar and the timebox at Phase 7
 start.
 
-> Measured line-item accuracy: _not yet measured._ Bar: _to be set at Phase 7 start._
-> Timebox: _to be set at Phase 7 start._ Outcome: _pending._
+> Measured line-item accuracy: **98.7%** (75/76 line items correctly extracted across the 14
+> receipt fixtures; 14/14 totals matched exactly). Bar: **90%** line-item extraction accuracy
+> across the 14 receipt fixtures. Timebox: **1–2 hours** for the spike. Set by the user at Phase 7
+> start, 2026-09-22. **Outcome: met the bar.** Flat OCR text interleaves an item's name and price
+> out of row order (ML Kit splits them into separate name-column and price-column blocks), so
+> `src/parse/receipt.ts` pairs each money-pattern line to its row label by bounding-box y-proximity
+> instead of text adjacency. One item (of 76) was mispaired with a neighbouring row's price.
+> Phase 7 proceeds to task 7.2: capture flow, review screen, ledger write, statement linking.
 
 **Consequences.** Smaller app, predictable performance, testable parsers with a golden-file
 corpus and a measurable accuracy figure. Extraction quality will be lower than an LLM's; the
