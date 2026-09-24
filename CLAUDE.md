@@ -59,4 +59,20 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Clean Up Background Processes
+
+**Kill shells, dev servers, and daemons you no longer need. Don't leave RAM tied up.**
+
+- After a background task (builds, dev servers, watchers) has served its purpose — e.g. a
+  build finished and was verified — stop it rather than leaving it running indefinitely.
+- Stopping the wrapper task isn't always enough: `expo run:android`/Metro in particular
+  detaches a bundler process that survives `TaskStop`. Check for it (e.g. via the port it's
+  listening on) and kill it directly if it's still alive.
+- Prefer a tool's own graceful shutdown when one exists (e.g. `./gradlew --stop` for Gradle/
+  Kotlin daemons) over force-killing, since it avoids cache corruption and daemons restart
+  cleanly on the next build anyway.
+- Don't touch processes you didn't start — IDE/editor tooling (language servers, MCP servers,
+  typings installers) and the shared `adb` server should be left alone.
+- Do this routinely once a background task's job is done, not just when asked.
+
 ---
